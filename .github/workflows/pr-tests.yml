@@ -3,10 +3,10 @@ name: PR ESLint Check
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   eslint:
@@ -25,4 +25,5 @@ jobs:
 
       - name: Run ESLint
         run: npm test
+
 
