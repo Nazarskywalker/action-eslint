@@ -1,20 +1,23 @@
 module.exports = {
-    "env": {
-        "browser": true,
-        "es6": true
-    },
-    "extends": [
-        "standard",
-        "eslint:recommended"
-    ],
-    "globals": {
-        "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
-    },
-    "parserOptions": {
-        "ecmaVersion": 2018,
-        "sourceType": "module"
-    },
-    "rules": {
-    }
-};
+  env: {
+    browser: true,
+    node: true,
+    es2021: true
+  },
+  extends: [
+    'standard',
+    'plugin:import/recommended',
+    'plugin:node/recommended',
+    'plugin:promise/recommended'
+  ],
+  parserOptions: {
+    ecmaVersion: 13,
+    sourceType: 'module'
+  },
+  rules: {
+    semi: ['error', 'always'],
+    quotes: ['error', 'single'],
+    'no-console': 'off'
+  }
+}
+
