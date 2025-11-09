@@ -1,12 +1,15 @@
-name: PR Tests
+name: PR ESLint Check
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
-      - main  # Тести запускаються на PR до main
+      - main
 
 jobs:
-  pr-tests:
+  eslint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -18,7 +21,8 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      - name: Run tests
+      - name: Run ESLint
         run: npm test
+
