@@ -30,10 +30,10 @@ function utf8length(str) {
       i++;
       length += 4;
       if (i >= str.length || !isLowSurrogate(str.charCodeAt(i))) {
-        throw new Error("invalid surrogate character");
+        throw new Error('invalid surrogate character');
       }
     } else if (isLowSurrogate(ch)) {
-      throw new Error("invalid surrogate character");
+      throw new Error('invalid surrogate character');
     } else if (ch < 0x80) {
       length++;
     } else if (ch < 0x0800) {
@@ -52,68 +52,36 @@ function positionFromUTF16CodeUnitOffset(offset, text) {
   let lengthSoFar = 0;
   for (const line of lines) {
     if (offset <= lengthSoFar + line.length) {
-      const lineText = line.slice(0, offset-lengthSoFar);
-      // +1 because eslint offset is a bit weird and will append text right
-      // after the offset.
+      const lineText = line.slice(0, offset - lengthSoFar);
       column = utf8length(lineText) + 1;
       break;
     }
-    lengthSoFar += line.length + 1; // +1 for line-break.
+    lengthSoFar += line.length + 1; // +1 for line-break
     lnum++;
   }
-  return {line: lnum, column: column};
+  return { line: lnum, column: column };
 }
 
-// How to get UTF-8 column from UTF-16 code unit column.
-// 1. Extract the line text until the column (exclusive).
-//    This is important when the character at the column is surrogate pair.
-// 2. Count length of the extracted line text in UTF-8.
-// 3. +1 to the length to get the UTF-8 column.
-//
-// Example:
-// - sourceLines: ["haya🐶🐱busa"]
-// - line: 1
-// - column: 7
-// - Expected output: {line: 1, column: 9}
-//
-// Ref:
-// - UTF-16 length("🐶"): 2
-// - UTF-8  length("🐶"): 4
-//                               v------- INPUT: {line: 1, column: 7}
-//                         haya🐶🐱busa
-// UTF-16 Column  (input): 12345 7 9012
-// UTF-8  Column (output): 12345 9 3456
-//                         ~~~~~~ <= utf8length("haya🐶") = 8
-//
-// The given position points to "🐱" (line:1, column: 7)
-// 1. Extract the line text until the column (exclusive): "haya🐶"
-// 2. Count length of the extracted line text in UTF-8: utf8length("haya🐶") = 8
-// 3. +1 to the length to get the UTF-8 column: 9
 function positionFromLineAndUTF16CodeUnitOffsetColumn(line, column, sourceLines) {
   let col = 0;
   if (sourceLines.length >= line) {
-    // 1. Extract the line text until the column (exclusive)
-    const lineText = sourceLines[line-1].slice(0, column-1);
-    // 2&3. Count length of the extracted line text in UTF-8 and +1.
+    const lineText = sourceLines[line - 1].slice(0, column - 1);
     col = utf8length(lineText) + 1;
   }
-  return {line: line, column: col};
+  return { line: line, column: col };
 }
 
 function commonSuffixLength(str1, str2) {
   let i = 0;
   let seenSurrogate = false;
   for (i = 0; i < str1.length && i < str2.length; ++i) {
-    const ch1 = str1.charCodeAt(str1.length-(i+1));
-    const ch2 = str2.charCodeAt(str2.length-(i+1));
+    const ch1 = str1.charCodeAt(str1.length - (i + 1));
+    const ch2 = str2.charCodeAt(str2.length - (i + 1));
     if (ch1 !== ch2) {
       if (seenSurrogate) {
         if (!isHighSurrogate(ch1) || !isHighSurrogate(ch2)) {
-          throw new Error("invalid surrogate character");
+          throw new Error('invalid surrogate character');
         }
-        // i is now between a low surrogate and a high surrogate.
-        // we need to remove the low surrogate from the common suffix
-        // to avoid breaking surrogate pairs.
         i--;
       }
       break;
@@ -159,14 +127,19 @@ module.exports = function (results, data) {
         severity: convertSeverity(msg.severity),
         code: {
           value: msg.ruleId,
-          url: (data.rulesMeta[msg.ruleId] && data.rulesMeta[msg.ruleId].docs ? data.rulesMeta[msg.ruleId].docs.url : '')
+          url: data.rulesMeta[msg.ruleId] && data.rulesMeta[msg.ruleId].docs
+            ? data.rulesMeta[msg.ruleId].docs.url
+            : ''
         },
         original_output: JSON.stringify(msg)
       };
 
-      // the end of the range is optional
       if (msg.endLine && msg.endColumn) {
-        diagnostic.location.range.end = positionFromLineAndUTF16CodeUnitOffsetColumn(msg.endLine, msg.endColumn, sourceLines)
+        diagnostic.location.range.end = positionFromLineAndUTF16CodeUnitOffsetColumn(
+          msg.endLine,
+          msg.endColumn,
+          sourceLines
+        );
       }
 
       if (msg.fix) {
