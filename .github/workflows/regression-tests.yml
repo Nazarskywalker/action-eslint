@@ -1,9 +1,14 @@
 name: Regression Tests
 
 on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   schedule:
-    - cron: '0 3 * * *'  # Щоденний запуск о 3:00 ранку
-  workflow_dispatch: {}   # Можна запускати вручну
+    - cron: '0 3 * * *' # щодня о 3:00 ранку
 
 jobs:
   regression:
@@ -18,7 +23,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Run regression tests
         run: npm run test:regression
