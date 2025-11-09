@@ -1,0 +1,22 @@
+name: CI Tests
+
+on:
+  pull_request:
+  schedule:
+    - cron: '0 2 * * *'  # щодня о 02:00 UTC
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [14, 16]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm install
+      - run: npm test
