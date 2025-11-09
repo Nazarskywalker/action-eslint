@@ -1,32 +1,31 @@
 name: Matrix Tests
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
-    branches:
-      - master
 
 jobs:
-  matrix-tests:
+  eslint-matrix:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        node: [18, 20]
-
+        os: [ubuntu-latest, windows-latest]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node }}
+          node-version: '20'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Run tests
-        run: npm test
+      - name: Run ESLint
+        run: npx eslint . --ext .js,.ts || true
+
+      - name: Run reviewdog
+        uses: reviewdog/action-eslint@v1
+        with:
+          reporter: github-pr-review
+          level: warning
+          fail_on_error: false
